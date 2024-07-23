@@ -1,35 +1,42 @@
 close all
 
+% Create geometry model with three equations
 model = createpde(3);
 
-xCoords = [-1 1 1 -1]';   % domain coordiantes  
-yCoords = [0 0 0.1 0.1]';   % domain coordinates
-gd = [2;length(xCoords);xCoords;yCoords]; % geometry description
+% Domain coordinates
+xCoords = [-1 1 1 -1]';  
+yCoords = [0 0 0.1 0.1]';
 
-ns = char('P1')';
-sf = 'P1'; 
-g = decsg(gd,sf,ns);
-geometryFromEdges(model, g);
-%pdegplot(g,'EdgeLabels','on') % to see edge labels
+% Geometry description
+geomDescription = [2;length(xCoords);xCoords;yCoords]; 
+
+% Name of the geometric object.
+% Here it is a single rectangle representing the Petri Shell
+namePetri = char('P1')';
+
+% Set formula
+setFormula = 'P1';
+
+% create geometry
+geometry = decsg(geomDescription,setFormula,namePetri);
+geometryFromEdges(model, geometry);
+
+%pdegplot(geometry,'EdgeLabels','on') % to see edge labels
 
 % define coefficient functions
-
 specifyCoefficients(model,'m',0,'d',1,'c',@c_coef,'a',@a_coef,'f',@f_coef);
 
-%hb = [0 0 0;0 1 0;0 0 0];
-%rbr = [0;0;0];
-%rbl = [0;0.01;0];
-qb = [0 0 0;0 0 0;0 0 0];
-gb = [0;0;0];
+qBoundary = [0 0 0;0 0 0;0 0 0];
+gBoundary = [0;0;0];
 
 applyBoundaryCondition(model,'neumann','Edge',[1,3],'q',0,'g',0);
-applyBoundaryCondition(model, 'mixed', 'Edge', 4, 'u', 0.01, 'Equationindex', 2, 'q', qb, 'g', gb);
-applyBoundaryCondition(model, 'mixed', 'Edge', 2, 'u', 0.001, 'EquationIndex', 2, 'q', qb, 'g', gb);
+applyBoundaryCondition(model, 'mixed', 'Edge', 4, 'u', 0.01, 'Equationindex', 2, 'q', qBoundary, 'g', gBoundary);
+applyBoundaryCondition(model, 'mixed', 'Edge', 2, 'u', 0.001, 'EquationIndex', 2, 'q', qBoundary, 'g', gBoundary);
 
 
 %% 4. Specify Initial Condition 
-uini = @u0;
-setInitialConditions(model, uini); 
+uInitial = @u0;
+setInitialConditions(model, uInitial); 
 
 %% 5. Solve PDE
 % create mesh
@@ -51,7 +58,7 @@ scr_siz = get(0,'ScreenSize');
 Pf1 = 140;
 % centers = zeros(2,Pf1);
 salt1 = length(tList)/Pf1;
-f = figure('Position', [scr_siz(3)/4 0 2*scr_siz(3)/3 scr_siz(4)]);
+finalFigure = figure('Position', [scr_siz(3)/4 0 2*scr_siz(3)/3 scr_siz(4)]);
 
 for i = 1:Pf1
 %     centercell = [0;0];
@@ -91,7 +98,7 @@ for i = 1:Pf1
 %     clim([0 9])
 % 
 %     tatata = sprintf('model_%d', ki);
-%     saveas(f,tatata,'jpg');
+%     saveas(finalFigure,tatata,'jpg');
 %     
 %     pause(0.05)
 % 
@@ -156,7 +163,7 @@ for i = 1:Pf1
     %sgtitle("r0=0.2; rM=1x10^6");
 %    [i;ki;tList(ki)];
     tatata = sprintf('modelall_%d', ki);
-    saveas(f,tatata,'jpg');
+    saveas(finalFigure,tatata,'jpg');
     
     pause(0.06)
     %close(f)
